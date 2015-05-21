@@ -2,13 +2,13 @@
 AngularJS, is currently one of the most widely used client side framework. It exposes large amounts of complex functionality, and lends itself very well to writing reusable, generic code.
 This article will attempt to be a detailed, and heavily opinionated look at what is Angular's Unit of reuse - directives, with an eye towards explaining their many frequently confusing features. 
 
-###1.1 Requirements, Assumptions
+##1.1 Requirements, Assumptions
 This article is going to assume some familiarity with the JavaScript programming language and AngularJS. To really get the most out of this article, it would be best if you had already attempted to do some work in AngularJS, but had yet to really attempt to modularize and reuse, or dive deep into directives. The details of the language outside of when it is directly applicable to the subject at hand (e.g. the digest lifecycle, dependency injection), will NOT be expounded upon.
 
 #2. Directives at 10,000 feet
 At their core, directives are functions which runs when a DOM element they have been attached to is encountered in the DOM tree.
 
-###2.1 Anatomy of a directive, at 10,000 feet
+##2.1 Anatomy of a directive, at 10,000 feet
 
 Lets start, with a directives type signature:
 
@@ -54,9 +54,10 @@ The second is the directive function's body prior to the return statement. This 
 
 The third and final part of the directive is the directives mandatory returned object. This object instructs the framework on how to construct a directive when the snake-cased version of the directives name (`demo-one` in our current case) is encountered in the DOM.
 
-###3.1 The Directive Definition Object
+##3.1 The Directive Definition Object
 This is where the meat of the directive's functionality lives, and where we will be spending the vast majority of our time.
-#####3.1.1 restrict
+
+###3.1.1 restrict
 The first and simplest configuration parameter available on the returnable object is the `restrict` key. It accepts one (or multiple) of the letters `EACM`, representing `Element, Attribute, Class`, and `Meta`. This is the specific type of element marker that AngularJS will accept for this directive. Specifically, given our sample directive signature 
     angular.module('sample').directive('demoOne', function () {
       return {
@@ -76,14 +77,14 @@ In general I dislike using class restricted directives as it needlessly couples 
 I also similiarly dislike meta restricted directives as they pollute the codebase with needless comments.
 In general attribute level directives are more flexible then element level directives as they can be composed with ease simply by putting multiple directives on the same element.
 
-#####3.1.2 Templating
+####3.1.2 Templating
 There are two keys that can be passed into a Directive Definition Object to indicate its HTML structure. The first is the `template` key which accepts an HTML string such as `<div> I am in your Directive Definition Object rendering your content</div>` directly. The second is a `templateUrl` key which accepts a path to an html file. By default these will override any DOM originally nested within the directive. So:
 
     <my-awesome-directive><div> Content was here, but now it ain't</div></my-awesome-directive>
 
 Will override the inner `div` with whatever is defined on the `template` or `templateUrl` of `<my-aweosme-directive>`. If you would like to see how that can be overridden, scroll to section 3.1.4.
 
-#####3.1.3 Scope
+###3.1.3 Scope
 The scope parameter of the Directive Definition Object can take three values:
 1) `scope: false`. This is the default value and instructs your directive to share its scope with the parent scope. Any changes done on this scope will automatically be done to the parent also.
 2) `scope: true`. This instructs the directive to create a new child scope which inherits from the parent prototypically. An in depth discussion of what prototypical inheritance means specifically is out of the scope of this article, the salient point is this:
@@ -121,7 +122,8 @@ http://plnkr.co/edit/7OrA3Sw6uxOixkF22UOA
 A quick aside: Astute readers may notice the `link` key used without further discussion. In brief, it permits for the running of arbitrary javascript by the directive when it is loaded on a DOM element. For a deeper discussion, scroll to section 3.1.5.
 
 3) `scope:{}`: This is known as isolateScope, and is worthy of its own discussion.
-#####3.1.3.1 Isolate Scope
+
+####3.1.3.1 Isolate Scope
 Isolate Scope is a way to pass individual things from the parent scope into the directive scope, without inheriting everything. There are three methodologies for passing scope properties. The first is attribute binding also known as one way binding, and is done with an `@` sign:
 
     .directive('attributeBound', function () {
@@ -182,13 +184,14 @@ There are several things worth noting. First and foremost, while this example is
 
     function awesomeClickHandler (outerParamName) {
 Clear as mud.... right?
-#####3.1.3.2 When to use which scope?
+
+####3.1.3.2 When to use which scope?
 The guidelines as I see them are:  
 Use `scope: false` if your directive is a wrapper around templates that *does not modify or read shared mutable state*.  Static DOM structures et al.  
 Use `scope: true` if you wish your directive  to have access to all of the parent scope but do not wish do modify it. Try to avoid modifying object references on the parent. Thing of this as a closure or a read only scope.  
 Use `scope: {}` (isolate scope) for reusable, self contained components. A note: an isolate scope will force all other directives on the same element to use that isolate scope. It is not legal to have multiple directives with isolate scope on the same element.
 
-#####3.1.3.4 A scope example
+####3.1.3.4 A scope example
 Let's say we start out wanting to render a team, and then realize we want to render a list of things, such that the definition of item deletion is up to the consumer, but the deletion occurs on a list item basis.
 
 Fully functional source code here: http://plnkr.co/edit/6u7EDTUF2exJusdNQ6PG
@@ -256,7 +259,8 @@ A short review:
 Things to note:   
 The function pointer is passed to a deeper level of nesting. This could repeat an arbitrary number of times.  
 Modifying the collection at the outer level modifies the collection at the inner level as it is passed by reference
-#####3.1.4 Transclusion
+
+###3.1.4 Transclusion
 Wikipedia defines transclusion as:  
 
     In computer science, transclusion is the inclusion of part or all of an electronic document into one or more other documents by reference. 
@@ -264,7 +268,8 @@ Wikipedia defines transclusion as:
     
 This is honestly a pretty good definition. So how does this work in Angular?
 As we know from section 3.1.2 any DOM written inside a directive is overridden by default. But let's say we wanted to inject DOM, for example a header that could vary depending on the type of thing we are listing and deleting? I'm glad you asked, lets modify our previous example.
-#####3.1.4.1 Transclusion: the base case
+
+####3.1.4.1 Transclusion: the base case
 http://plnkr.co/edit/9uK11wQ8EGMNVeWyO1Y2
 
 Since we are building on our previous example, I will not paste the whole code here, rather simply highlighting the differences.
@@ -283,7 +288,7 @@ On the list, and
      
 on the list item. Note that passing the type into the list item is superfluous as the transcluded DOM executes in a prototypical descended of the parent (in this case a child of the list's isolate scope). Also note that the div labeled with `ng-transclude` has its content wiped out and replaced with the transcluded DOM.
 
-#####3.1.4.2 Transclusion: the complex case
+####3.1.4.2 Transclusion: the complex case
 Let's say we decided to write a custom widget. It should accept a header to be displayed from the outside, and a header to be displayed on the inside. How can we achieve this?
 The first thing to note is that the `link` function accepts the following parameters:
 `scope`, the directives scope    
@@ -334,14 +339,14 @@ Working code: http://plnkr.co/edit/cCynGS7gxL1Q6pvaEd3H
 What is going on here you may ask? In short, we are using our transclusion function to rip apart the transcluded DOM, and insert it into our HTML as appropriate. All of the DOM level manipulation is off the native `NamedNodeMap` object as defined here:
 https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
 
-#####3.1.4.3 Transclusion: the (slightly)even more complex case
+####3.1.4.3 Transclusion: the (slightly)even more complex case
 What if we wanted to extend the above example to also print a value from the parent scope in our transcluded headers? 
 
 modifying the first parameter of the `transcludeFn` from `scope` to `scope.$parent` does the trick. In general the transcluded content can be transcluded from absolutely any scope as long as you can find a reference to it.
 
 http://plnkr.co/edit/cCynGS7gxL1Q6pvaEd3H
 
-#####3.1.5 Directive Compilation
+####3.1.5 Directive Compilation
 The Directive Definition Object can have the following keys:    
 `compile`. A compile function useful to transform the DOM template. Returns an object containing `pre:` and `post:`. Both represent linking phases.
 `link`. This is identical to the `post` returned from the `compile` function. This and `pre` can be loosely thought of as the logical workhorses, where scope based logic lives.
@@ -484,13 +489,13 @@ Code: http://plnkr.co/edit/FgJM0SMraIP2dmorvHTx
 
 Lets dive deeper into these different functions and figure out what to use them for.
 
-#####3.1.5.2 Compilation
+####3.1.5.2 Compilation
 The `compile` function of a directive does not have access to scope. It accepts the following parameters:
 `tElem`, the template Element
 `tAttrs`, the template Attributes
 It runs before the template Element is rendered. What that means in practice, is that any change done to either `tElem` or `tAttrs` will propagate to all instances of this directive. The flipside that this is a great place to do that kind of manipulation as it will only ever run once unless explicitly recompiled.
 
-#####3.1.5.3 Controller
+####3.1.5.3 Controller
 This will run before the isolateScope binds and before any nested DOM is linked. This is a great place to do scope initialization and massage, as well as providing an opportunity to expose an API to other directives. What that means is that you can expose functions and properties off the object returned by the controller, which can then be pulled into other directives with the `require` key. For a more in depth discussion with examples of the latter, please see 3.1.6.
 One gotcha worth mentioning is that this follows standard Angular Dependency Injection Syntax, so things like:
 
@@ -501,7 +506,7 @@ will break at minification. As usual, the fully qualified syntax:
     controller: ['$scope', function ($scope) {}]
 is preferable.
 
-#####3.1.5.4 Linking
+####3.1.5.4 Linking
 There are two linking functions both of which have the signature
     
     function(elem, attrs, scope, controller, transcludeFn)
@@ -512,7 +517,7 @@ This will run after the isolateScope binds but before any nested DOM is linked. 
 #####3.1.5.4.2 PostLink
 This is the workhorse and default function called by a directive. If no compile function is provided and only a `link` key is a given, it defaults to this. It will run after all nested directives have fully compiled and linked as well as any directives with a higher priority.
 
-#####3.1.6 Require
+###3.1.6 Require
 The final key is `require`. Fundamentally what this allows you to do is to pull in one (or multiple) directive controllers to expose them as an API. 
 The controller name can be prefixed with `^` to indicate that the directive exposing the controller must be above the current element in the DOM, `?`, to indicate that the controller is optional, or `^?` to indicate it is up AND optional. Lack of a prefix indicates that the directive must be a sibling. For the latter reason (the possibility to use an API exposing directive as a sibling), it is best practice NOT to use Element level directives for this purpose.
 The controller (or array of controllers if multiple) is then passed into the linking functions as the fourth parameter. Recall:
