@@ -357,7 +357,8 @@ The Directive Definition Object can have the following keys:
 The important thing to remember is that compilation happens first, from the outside in, and in priority order, followed by the controller function, from the outside in, in priority order, followed by the preLink function, from the outside in, in priority order, followed by the postLink function from the inside out, in reverse priority order. 
 
 Example:
-	app.directive('outerCompile', function () {
+
+     app.directive('outerCompile', function () {
 	  return {
 	    restrict: 'E',
 	    template: '<div inner-compile-first inner-compile-second inner-never-compile/>',
