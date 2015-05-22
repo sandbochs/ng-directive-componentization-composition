@@ -44,7 +44,7 @@ and proceed on to an annotated, non functional example:
 Well, now we've cleared that up, our work here is done.
 O, right.....
 
-#3.Directives at the MicroScopic level
+#3.Directives in depth
 The above directive contains three fundamental building blocks. The first, is the directive signature. This is the annotated function and injectable definition attached to a module. In the code sample above:
 
     angular.module('annotated').directive('demo-one', ['injectable', function (injectable) { //the directive definition function, follows standard dependency injection rules
