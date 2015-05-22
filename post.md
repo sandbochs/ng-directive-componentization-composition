@@ -216,7 +216,6 @@ A short review:
       $scope.collection = [{id: 1, name: 'Jim'}, {id: 2, name: 'John'}];
       $scope.typeOfThing = "Team Member";
       $scope.deleteFunction = function (id) {
-        console.log(id);
         mockDeletionService.delete(id);
         for (var count = 0; count < $scope.collection.length; count++) {
           if ($scope.collection[count].id === id) {
