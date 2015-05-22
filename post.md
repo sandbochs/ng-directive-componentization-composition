@@ -1,5 +1,5 @@
 #1. Introduction
-AngularJS, is currently one of the most widely used client side frameworks. It exposes large amounts of complex functionality, and lends itself very well to writing reusable, generic code.
+AngularJS exposes large amounts of complex functionality, and lends itself very well to writing reusable, generic code.
 This article will attempt to be a detailed, and heavily opinionated look at what is Angular's Unit of reuse - directives, with an eye towards explaining their many frequently confusing features. 
 
 ##1.1 Requirements, Assumptions
@@ -658,9 +658,9 @@ For example, let us say we wish to have a widget which can display some arbitrar
     
 We use the `$injector` to pull in a service, use isolate scope to name its methods and the displayproperty, and, voila, flexible data sources.
 
-Running sample: http://plnkr.co/edit/trTPqfoMOfsDXYSsiOCR?p=preview
+Running sample: http://plnkr.co/edit/trTPqfoMOfsDXYSsiOCR
 
-Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives. The important thing to remember here, is that the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the attrs object tends to blow that out of the water. As such, this is not a practice I hold in particularly high regard, especially that everything it achieves can be similarly achieved through other means.
+Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives. The important thing to remember here, is that because the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the `attrs` object tends to blow that out of the water. As such, this is not a practice I make much use of, especially given that just about everything it achieves can be similarly achieved through other means.
 
 #5 Conclusion/Summary
 Isolate Scopes are awesome. They are the secret sauce that lets your directives stand alone.  
