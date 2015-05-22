@@ -636,6 +636,7 @@ So what other composition strategies are there? We've talked about isolate scope
 
 There are several patterns worth mentioning. 
 
+##4.1 Dynamic injection
 First and foremost, by injecting `$injector`, you can dynamically identify different services depending on the situation. This is a pattern that can be quite easily used with an `@` binding. All it requires is that the varying injectable services have a uniform API. This allows building flexible components that inject different type of things in different situations. This pattern is complimentary with everything discussed so far and can be used quite easily in conjunction with the controller/require pattern and isolate scopes. Think of controllers/require as exposing functionality, while `$injector` and services expose data.
 
 For example, let us say we wish to have a widget which can display some arbitrary type of object in some way. This object could be fetched from different keys, its display property could vary, you get the picture? What would that code look like?
@@ -660,6 +661,7 @@ We use the `$injector` to pull in a service, use isolate scope to name its metho
 
 Running sample: http://plnkr.co/edit/trTPqfoMOfsDXYSsiOCR
 
+##4.2 Eventing
 Another common strategy for composition across directive scopes is to use Angulars eventing framework to communicate. There are three methods useful for this, and they are: 
 `scope.$emit`, which sends a message from your current scope upwards inclusive,
 `scope.$broadcast`, which sends a message from your current scope downwards inclusive,
@@ -723,6 +725,7 @@ Note that the event gets renamed in the parent to avoid an infinite loop on reth
 
 A working demo is here: http://plnkr.co/edit/Thm8TTp1V2O3gx7X60cV
 
+##4.3 Shared attributes
 Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives. The important thing to remember here, is that because the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the `attrs` object tends to blow that out of the water. As such, this is not a practice I make much use of, especially given that everything it achieves can be similarly achieved through other means.
 
 #5 Conclusion/Summary
