@@ -527,7 +527,7 @@ The controller (or array of controllers if multiple) is then passed into the lin
     
 This opens the field to multiple interesting strategies.
 
-Strategy 1) Bundle functionality into an API level directive. Commonly used tasks like sorting and filtering lend themselves well to this kind of implementation. For example lets say we want to build a directive that can sort an arbitrary collection.
+The first approach is to use `controller` to bundle functionality into an API level directive. Commonly used tasks like sorting and filtering lend themselves well to this kind of implementation. For example lets say we want to build a directive that can sort an arbitrary collection.
 
 We could then write our directive:
 
@@ -543,7 +543,7 @@ We could then write our directive:
 	  }
 	});
 
-And consume it like so:
+And consume it like so using `require`:
 
 	app.directive('demoList', function () {
 	  return {
@@ -579,8 +579,7 @@ For example:
 	  return {
 	    restrict: 'A',
 	    controller: function ($scope) {
-	      $scope.list = [{name: 'John'}, {name: 'Alan'}, {name: 'Cindy'}, {name: 'Scarlett'}, {name: 'Aristotle'}, {name: 'Barack'}];
-	
+	      $scope.list = [{name: 'Pamela'}, {name: 'Harleen'}, {name: 'Harvey'}, {name: 'Selina'}, {name: 'Talia'}, {name: 'Ras'}];
 	      this.add = function () {
 	        $scope.list.push({name: "new Guy"});
 	      }
@@ -592,10 +591,7 @@ For example:
 	app.directive('demoList', function () {
 	  return {
 	    restrict: 'E',
-	    template: '<div ng-repeat="item in list">{{item.name}}</div>',
-	    link: function (scope, attrs,elem, ctrl) {
-	      scope.list = [{name: 'John'}, {name: 'Alan'}, {name: 'Cindy'}, {name: 'Scarlett'}, {name: 'Aristotle'}, {name: 'Barack'}];
-	    }
+	    template: '<div ng-repeat="item in list">{{item.name}}</div>'
 	  }
 	});
 	
@@ -615,7 +611,6 @@ For example:
 	    template: '<div ng-click="callAdd()"> CLICK ME!</div>',
 	    link: function (scope, elem, attrs, controller) {
 	      scope.callAdd = function () {
-	        console.log('foo');
 	        controller.add();
 	      };
 	    }
@@ -626,7 +621,7 @@ Note the nested isolate Scopes. Now given the following DOM:
 
 	<div foreign-scope>
 	   <demo-list list='list'></demo-list>
-	   <demo-isolate/>
+	   <demo-isolate></demo-istolate>
 	</div>
 A click on the giant CLICK ME! will in fact add the new guy! Obviously this is a slightly fanciful example, but with a little bit of imagination the utility should become rather obvious as a replacement for deep passes of `&` isolate scope bindings.
 Working Example: http://plnkr.co/edit/xGozv2RHZz7CH0jFuyvA
