@@ -660,6 +660,69 @@ We use the `$injector` to pull in a service, use isolate scope to name its metho
 
 Running sample: http://plnkr.co/edit/trTPqfoMOfsDXYSsiOCR
 
+Another common strategy for composition across directive scopes is to use Angulars eventing framework to communicate. There are three methods useful for this, and they are: 
+`scope.$emit`, which sends a message from your current scope upwards inclusive,
+`scope.$broadcast`, which sends a message from your current scope downwards inclusive,
+and `scope.$on`, which listens for a message in a particualr scope.
+
+When I talk about inclusive, what I mean is whether or not a listener, defined in the same scope, would catch an event. Since both event types are in fact inclusive, it is important not to send the same event from a listener. This approach has the benefit of letting you easily reach across the tree by sending an `$emit` up to a common scope, catching it with an `$on`, and rethrowing the event back down with a `$broadcast`.
+
+For example, lets say we have a list of clickable users, on one half our page, and we would like to propagate users, on click, into a second, completely unrelated scope for display:
+
+    app.controller('parentController', function ($scope) {
+      $scope.$on('demoEvent', function (evt, message) {
+        $scope.$broadcast('demoEventRenamed', message);
+      })
+    });
+    
+    app.directive('moreScope', function () {
+      return {
+        restrict: 'A',
+        scope: {}
+      }
+    })
+    
+    
+    app.directive('eventUp', function () {
+      return {
+        restrict: 'E',
+        template: '<div>This is the inner directive with the click: <div ng-repeat="item in list" ng-click="send(item)">{{item.name}}</div></div>',
+        link: function (scope) {
+          scope.list = [{name: 'Harley'}, {name: 'Edward'}, {name: 'Selina'}, {name: 'Pamela'}];
+          scope.send = function (item) {
+            scope.$emit('demoEvent', item);
+          }
+        }
+      }
+    });
+    
+    app.directive('eventCatch', function () {
+      return {
+        restrict: 'E',
+        scope: {},
+        template: '<div> This is the inner directive with the listen: <div ng-repeat="item in list">{{item.name}}</div></div>',
+        link: function (scope) {
+          scope.list = [];
+          scope.$on('demoEventRenamed', function (evt, message) {
+            scope.list.push(message);
+          });
+        }
+      }
+    });
+
+Then wiring this with the following DOM:
+
+    <div ng-controller="parentController">This is the parent scope:
+      <div more-scope>
+        <event-up list='list'></event-up>
+      </div>
+      <event-catch></event-catch>
+    </div>
+    
+Note that the event gets renamed in the parent to avoid an infinite loop on rethrow. Also note that events permeate the boundaries of isolate scopes.
+
+A working demo is here: http://plnkr.co/edit/Thm8TTp1V2O3gx7X60cV
+
 Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives. The important thing to remember here, is that because the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the `attrs` object tends to blow that out of the water. As such, this is not a practice I make much use of, especially given that everything it achieves can be similarly achieved through other means.
 
 #5 Conclusion/Summary
