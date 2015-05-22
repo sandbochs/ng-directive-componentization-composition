@@ -1,54 +1,54 @@
 #1. Introduction
 AngularJS exposes large amounts of complex functionality, and lends itself very well to writing reusable, generic code.
-This article will attempt to be a detailed, and heavily opinionated look at what is Angular's Unit of reuse - directives, with an eye towards explaining their many frequently confusing features. 
+This article will be a detailed, and heavily opinionated look at what is Angular's Unit of reuse, directives, with an eye towards explaining their many frequently confusing features.
 
 ##1.1 Requirements, Assumptions
 This article is going to assume some familiarity with the JavaScript programming language and AngularJS. To really get the most out of this article, it would be best if you had already attempted to do some work in AngularJS, but had yet to really attempt to modularize and reuse, or dive deep into directives. The details of the language outside of when it is directly applicable to the subject at hand (e.g. the digest lifecycle, dependency injection), will NOT be expounded upon.
 
 #2. Directives at 10,000 feet
-At their core, directives are functions which runs when a DOM element they have been attached to is encountered in the DOM tree.
+At their core, directives are functions which run when a DOM element that they have been attached to is encountered in the DOM tree.
 
 ##2.1 Anatomy of a directive, at 10,000 feet
 
-Lets start, with a directives type signature:
+Lets start with a directive's type signature:
 
     injectablesList -> configObject
-    
+
 and proceed on to an annotated, non functional example:
 
-    angular.module('annotated').directive('demoOne', ['injectable', function (injectable) { //the directive definition function, follows standard dependency injection rules
-    //Code can be run here before returning
-      return { //must return an object. Technically its entire contents is optional
-        restrict: 'EACM', //the DOM type of the directive
-        scope: { //isolate scope parameters
+    angular.module('annotated').directive('demoOne', ['injectable', function (injectable) { // The directive definition function, follows standard dependency injection rules
+    // Code can be run here before returning
+      return { // Directives must return an object. Technically its entire contents is optional
+        restrict: 'EACM', // This represents the DOM type of the directive
+        scope: { // Isolate scope parameters
           item: '@',
           item2: '=',
           item3: '&'
         },
-        transclude: 'true', //transclusionType
-        controller: function ($scope) { //controller function}, 
-        require: 'foo', //require other controllers here
-        template: '<div> I am awesome!</div>,
-        compile: function (elem, attr, transcludeFn) { //compile function
-          return { //must return an object
-            pre: function (scope, elem, attr, controllers, transcludeFn) { //pre link function },
-            post: function (scope, elem, attr, controllers, transcludeFn) { //post link function }
+        transclude: 'true', // TransclusionType
+        controller: function ($scope) {} // Controller function,
+        require: 'foo', // Require other controllers here
+        template: '<div>I am awesome!</div>,
+        compile: function (elem, attr, transcludeFn) { // Compile function
+          return { // Must return an object
+            pre: function (scope, elem, attr, controllers, transcludeFn) {}, // Pre link function
+            post: function (scope, elem, attr, controllers, transcludeFn) {}, // Post link function
           }
         },
-        controllerAs: 'name' //controller name for DOM interpolation,
-        priority: '1000' //compilation priority,
-        terminal: false // is this the last compileable directive
+        controllerAs: 'name' // Controller name for DOM interpolation,
+        priority: '1000' // Compilation priority,
+        terminal: false // Is this the last compileable directive
         }
       }]);
-      
+
 Well, now we've cleared that up, our work here is done.
-O, right.....
+Oh, right.....
 
 #3.Directives in depth
 The above directive contains three fundamental building blocks. The first, is the directive signature. This is the annotated function and injectable definition attached to a module. In the code sample above:
 
-    angular.module('annotated').directive('demo-one', ['injectable', function (injectable) { //the directive definition function, follows standard dependency injection rules
-    
+    angular.module('annotated').directive('demo-one', ['injectable', function (injectable) { // The directive definition function, follows standard dependency injection rules
+
 The directive signature follows Angular's standard dependency injection syntax and rules.
 The second is the directive function's body prior to the return statement. This is a convenient place to define functions reused within different inner functions of your directive, or to configure things for use.
 
@@ -58,24 +58,24 @@ The third and final part of the directive is the directives mandatory returned o
 This is where the meat of the directive's functionality lives, and where we will be spending the vast majority of our time.
 
 ###3.1.1 restrict
-The first and simplest configuration parameter available on the returnable object is the `restrict` key. It accepts one (or multiple) of the letters `EACM`, representing `Element, Attribute, Class`, and `Meta`. This is the specific type of element marker that AngularJS will accept for this directive. Specifically, given our sample directive signature 
+The first and simplest configuration parameter available on the returnable object is the `restrict` key. It accepts one (or multiple) of the letters `EACM`, representing `Element, Attribute, Class`, and `Meta`. This is the specific type of element marker that AngularJS will accept for this directive. Specifically, given our sample directive signature
     angular.module('sample').directive('demoOne', function () {
       return {
         restrict: 'E'
       }
     }
-    
-`restrict: 'E'` means that the directive will trigger in the following circumstance: `<demo-one/>`  
-`restrict: 'A'` means that the directive will trigger in the following circumstance: `<div demo-one/>`  
+
+`restrict: 'E'` means that the directive will trigger in the following circumstance: `<demo-one/>`
+`restrict: 'A'` means that the directive will trigger in the following circumstance: `<div demo-one/>`
 `restrict: 'C'`  means the directive will trigger in the following circumstance:
-`<div class='demo-one'/>`  
+`<div class='demo-one'/>`
 `restrict: 'M'` means the directive will trigger in the following circumstance:
 `<!--directive: demo-one-->`
 
 These can also be combined.
 In general I dislike using class restricted directives as it needlessly couples functional directive information with css presentation logic, and makes the stylesheets significantly more brittle.
 I also similiarly dislike meta restricted directives as they pollute the codebase with needless comments.
-In general attribute level directives are more flexible then element level directives as they can be composed with ease simply by putting multiple directives on the same element.    
+In general attribute level directives are more flexible then element level directives as they can be composed with ease simply by putting multiple directives on the same element.
 A more general discussion of this will follow in sections 3.1.6 and 4
 
 ####3.1.2 Templating
@@ -90,17 +90,17 @@ The scope parameter of the Directive Definition Object can take three values:
 1) `scope: false`. This is the default value and instructs your directive to share its scope with the parent scope. Any changes done on this scope will automatically be done to the parent also.
 2) `scope: true`. This instructs the directive to create a new child scope which inherits from the parent prototypically. An in depth discussion of what prototypical inheritance means specifically is out of the scope of this article, the salient point is this:
 Given the following DOM:
-    
+
     <body ng-app="demo">
       <div ng-controller="outerCtrl">
-        <div>{{outerVal}}</div>
-        <div>{{model.innerVal}}</div>
-        <div>{{innerModel.innerVal}}</div>
+        <div>{{ outerVal }}</div>
+        <div>{{ model.innerVal  }}</div>
+        <div>{{ innerModel.innerVal }}</div>
         <inner-dir></inner-dir>
       </div>
     </body>
 and the following javascript:
-  
+
     angular.module('demo', []).controller('outerCtrl', function ($scope) {
       $scope.outerVal = "outer";
       $scope.model = {innerVal: "inner"};
@@ -133,19 +133,19 @@ Isolate Scope is a way to pass individual things from the parent scope into the 
         scope: {
           oneWay: '@'
         },
-        template: '<div>{{oneWay}}</div>',
+        template: '<div>{{ oneWay  }}</div>',
         link: function (scope) {
           scope.oneWay = 'newValue';
         }
       }
     }
 then calling this directive like so:
-    <attribute-bound one-way='{{outerValue}}'/>
+    <attribute-bound one-way='{{ outerValue }}'/>
 Will bind a variable `scope.oneWay` in the directive to the value of `scope.$parent.outerValue`, at directive compilation time and will NOT propagate changes to the value out onto the outer scope. The important thing to realize with one way bindings, is that they will *always* occur as a string. What that means in practice is that if you would like to pass the contents of a variable you *must* interpolate it as demonstrated above, since merely setting it to `one-way='outerValue'` would pass the literal string, `outerValue`. The second is that if the contents of the interpolated variable is an object or an array, you must apply `JSON.parse` in your directive, like so:
 
     scope.oneWay = JSON.parse(scope.oneWay);
 
-The second method of passing variables onto an isolate scope is commonly referred to as either reference or two-way binding. 
+The second method of passing variables onto an isolate scope is commonly referred to as either reference or two-way binding.
 
     .directive('referenceBound', function () {
       return {
@@ -153,17 +153,17 @@ The second method of passing variables onto an isolate scope is commonly referre
         scope: {
           twoWay: '@'
         },
-        template: '<div>{{oneWay}}</div>',
+        template: '<div>{{ oneWay }}</div>',
         link: function (scope) {
           scope.twoWay.value = 'newValue';
         }
       }
     }
-    
-which can then be invoked with 
+
+which can then be invoked with
 
     <reference-bound two-way="outerValue"/>
-There are several things to note here. The first is that unlike in the attribute example, interpolation is unnecessary as object references are passed directly. The second is that any changes to `scope.twoWay` in the directive will propagate to `scope.$parent.outerValue` (the outer scope), while any other changes to the directive scope not also listed on the isolate scope will not.  
+There are several things to note here. The first is that unlike in the attribute example, interpolation is unnecessary as object references are passed directly. The second is that any changes to `scope.twoWay` in the directive will propagate to `scope.$parent.outerValue` (the outer scope), while any other changes to the directive scope not also listed on the isolate scope will not.
 
 The third and final method of passing information into a directive's isolate scope is known as expression binding or (in my head) block binding (my Ruby is shining through and I can't resist. Also that analogy helped me grasp it to begin with). It is represented by the `&` symbol and is used to pass function references in the parent scope.
 
@@ -172,24 +172,24 @@ The third and final method of passing information into a directive's isolate sco
         restrict: 'E',
         scope: {
           innerValue: '@',
-          outerFunction: '&' 
+          outerFunction: '&'
         }
       }
     }
-    
+
 Which can then be invoked with:
 
     <expression-bound inner-value='awesomeString' outerFunction='awesomeClickHandler' ng-click='outerFunction({outerParamName: innerValue})'/>
-    
+
 There are several things worth noting. First and foremost, while this example is (deliberately) trivial, you could absolutely massage innerValue in the directive, or call the outerFunction from the directive javascript directly. The second is that when an expression bound function is called, it must name the params to coincide with the signature of the function to which it is a reference. In this particular case what that means is that in the outer scope, the function signature for `awesomeClickHandler` is:
 
     function awesomeClickHandler (outerParamName) {
 Clear as mud.... right?
 
 ####3.1.3.2 When to use which scope?
-The guidelines as I see them are:  
-Use `scope: false` if your directive is a wrapper around templates that *does not modify or read shared mutable state*.  Static DOM structures et al.  
-Use `scope: true` if you wish your directive  to have access to all of the parent scope but do not wish do modify it. Try to avoid modifying object references on the parent. Thing of this as a closure or a read only scope.  
+The guidelines as I see them are:
+Use `scope: false` if your directive is a wrapper around templates that *does not modify or read shared mutable state*.  Static DOM structures et al.
+Use `scope: true` if you wish your directive  to have access to all of the parent scope but do not wish do modify it. Try to avoid modifying object references on the parent. Thing of this as a closure or a read only scope.
 Use `scope: {}` (isolate scope) for reusable, self contained components. A note: an isolate scope will force all other directives on the same element to use that isolate scope. It is not legal to have multiple directives with isolate scope on the same element.
 
 ####3.1.3.4 A scope example
@@ -201,10 +201,10 @@ A short review:
 
     <body ng-app="isolateScope">
         <div ng-controller="configController">
-        <nested-list type="{{typeOfThing}}" ,="" list="collection" delete-func="deleteFunction(id)"></nested-list>
+        <nested-list type="{{ typeOfThing }}" ,="" list="collection" delete-func="deleteFunction(id)"></nested-list>
         </div>
     </body>
-    
+
     var app = angular.module('isolateScope', []);
 
     app.service('mockDeletionService', function () {
@@ -226,7 +226,7 @@ A short review:
         }
       }
     });
-    
+
     app.directive('nestedList', function () {
       return {
         restrict: 'E',
@@ -235,7 +235,7 @@ A short review:
           type: '@',
           list: '='
         },
-        template: '<list-item type="{{type}}" del="innerDel(item.id)" item="item" ng-repeat="item in list">',
+        template: '<list-item type="{{ type }}" del="innerDel(item.id)" item="item" ng-repeat="item in list">',
         link: function (scope) {
           scope.innerDel = function (id) {
             scope.deleteFunc({id: id});
@@ -243,7 +243,7 @@ A short review:
         }
       }
     });
-    
+
     app.directive('listItem', function () {
       return {
         restrict: 'E',
@@ -252,20 +252,20 @@ A short review:
           type: '@',
           item: '='
         },
-        template: '<div><span>{{type}}: {{item.name}}</span><button ng-click="del()">Delete {{type}}</button></div>'
+        template: '<div><span>{{ type }}: {{ item.name }}</span><button ng-click="del()">Delete {{ type }}</button></div>'
       }
     });
 
-Things to note:   
-The function pointer is passed to a deeper level of nesting. This could repeat an arbitrary number of times.  
+Things to note:
+The function pointer is passed to a deeper level of nesting. This could repeat an arbitrary number of times.
 Modifying the collection at the outer level modifies the collection at the inner level as it is passed by reference
 
 ###3.1.4 Transclusion
-Wikipedia defines transclusion as:  
+Wikipedia defines transclusion as:
 
-    In computer science, transclusion is the inclusion of part or all of an electronic document into one or more other documents by reference. 
+    In computer science, transclusion is the inclusion of part or all of an electronic document into one or more other documents by reference.
     http://en.wikipedia.org/wiki/Transclusion
-    
+
 This is honestly a pretty good definition. So how does this work in Angular?
 As we know from section 3.1.2 any DOM written inside a directive is overridden by default. But let's say we wanted to inject DOM, for example a header that could vary depending on the type of thing we are listing and deleting? I'm glad you asked, lets modify our previous example.
 
@@ -274,24 +274,24 @@ http://plnkr.co/edit/9uK11wQ8EGMNVeWyO1Y2
 
 Since we are building on our previous example, I will not paste the whole code here, rather simply highlighting the differences.
 
-First, we have removed `type: '@'` from the list-item isolate scope.    
+First, we have removed `type: '@'` from the list-item isolate scope.
 Second, we have added `transclude: true` onto the Directive Definition Object of the list item.
 Thirdly we have changed the templates:
 
     template: '<list-item del="innerDel(item.id)" item="item" ng-repeat="item in list">' +
-      '<span>It\'s a bird, it\'s a plane, it\'s transclusionMan. {{type}}' +
+      '<span>It\'s a bird, it\'s a plane, it\'s transclusionMan. {{ type }}' +
       '</list-item-type>',
-      
-On the list, and 
 
-     template: '<div><div ng-transclude>The transcluded header goes here: </div><span>{{item.name}}</span><button ng-click="del()">Delete {{type}}</button></div>'
-     
+On the list, and
+
+     template: '<div><div ng-transclude>The transcluded header goes here: </div><span>{{ item.name }}</span><button ng-click="del()">Delete {{ type }}</button></div>'
+
 on the list item. Note that passing the type into the list item is superfluous as the transcluded DOM executes in a prototypical descended of the parent (in this case a child of the list's isolate scope). Also note that the div labeled with `ng-transclude` has its content wiped out and replaced with the transcluded DOM.
 
 ####3.1.4.2 Transclusion: the complex case
 Let's say we decided to write a custom widget. It should accept a header to be displayed from the outside, and a header to be displayed on the inside. How can we achieve this?
 The first thing to note is that the `link` function accepts the following parameters:
-`scope`, the directives scope    
+`scope`, the directives scope
 `elem`, the directives element
 `attrs`, the element attributes
 `controller`, the required controller, see section 3.1.5
@@ -302,7 +302,7 @@ A more detailed discussion will follow in section 3.1.5
       $scope.item = {id: 1, name: 'Jim'};
       $scope.typeOfThing = "Awesome Person";
     });
-    
+
     app.directive('headeredThing', function () {
       return {
         restrict: 'E',
@@ -310,7 +310,7 @@ A more detailed discussion will follow in section 3.1.5
         scope: {
           item: '='
         },
-        template: '<div>{{item.name}}</div>',
+        template: '<div>{{ item.name }}</div>',
         link: function (scope, elem, attrs, controller, transcludeFn) {
           transcludeFn(scope, function(tElem, tScope) {
             for (var count = 0; count < tElem.length; count++) {
@@ -327,34 +327,34 @@ A more detailed discussion will follow in section 3.1.5
         }
       }
     });
-    
+
     <body ng-app="transclusion">
       <div ng-controller="configController">
         <headered-thing item="item"><div class="outer-header">I am your outer header! This transclusion thing is easy after all!</div><div class="inner-header">It's a bird, it's a plane, it's transclusionMan.</div></nested-list>
       </div>
     </body>
-    
+
 Working code: http://plnkr.co/edit/cCynGS7gxL1Q6pvaEd3H
 
 What is going on here you may ask? In short, we are using our transclusion function to rip apart the transcluded DOM, and insert it into our HTML as appropriate. All of the DOM level manipulation is off the native `NamedNodeMap` object as defined here:
 https://developer.mozilla.org/en-US/docs/Web/API/NamedNodeMap
 
 ####3.1.4.3 Transclusion: the (slightly)even more complex case
-What if we wanted to extend the above example to also print a value from the parent scope in our transcluded headers? 
+What if we wanted to extend the above example to also print a value from the parent scope in our transcluded headers?
 
 modifying the first parameter of the `transcludeFn` from `scope` to `scope.$parent` does the trick. In general the transcluded content can be transcluded from absolutely any scope as long as you can find a reference to it.
 
 http://plnkr.co/edit/cCynGS7gxL1Q6pvaEd3H
 
 ####3.1.5 Directive Compilation
-The Directive Definition Object can have the following keys:    
+The Directive Definition Object can have the following keys:
 `compile`. A compile function useful to transform the DOM template. Returns an object containing `pre:` and `post:`. Both represent linking phases.
 `link`. This is identical to the `post` returned from the `compile` function. This and `pre` can be loosely thought of as the logical workhorses, where scope based logic lives.
 `priority`. The order in which directives will execute.
 `terminal` Whether a directives compilation should terminate further compilation on the current page. Will also prevent any child directives from compiling.
 `controller`. This is a good place to expose API's for consumption by other directives.
 
-The important thing to remember is that compilation happens first, from the outside in, and in priority order, followed by the controller function, from the outside in, in priority order, followed by the preLink function, from the outside in, in priority order, followed by the postLink function from the inside out, in reverse priority order. 
+The important thing to remember is that compilation happens first, from the outside in, and in priority order, followed by the controller function, from the outside in, in priority order, followed by the preLink function, from the outside in, in priority order, followed by the postLink function from the inside out, in reverse priority order.
 
 Example:
 
@@ -378,7 +378,7 @@ Example:
 	    }
 	  }
 	});
-	
+
 	app.directive('innerCompileFirst', function () {
 	  return {
 	    restrict: 'A',
@@ -400,7 +400,7 @@ Example:
 	    }
 	  }
 	});
-	
+
 	app.directive('innerCompileSecond', function () {
 	  return {
 	    restrict: 'A',
@@ -422,7 +422,7 @@ Example:
 	    }
 	  }
 	});
-	
+
 	app.directive('innerNeverCompile', function () {
 	  return {
 	    restrict: 'A',
@@ -443,7 +443,7 @@ Example:
 	    }
 	  }
 	});
-	
+
 	app.directive('innerNestedCompile', function () {
 	  return {
 	    restrict: 'E',
@@ -463,9 +463,9 @@ Example:
 	    }
 	  }
 	});
-	
+
 With the HTML:
-    
+
     <outer-compile></outer-compile>
 
 The console then reads:
@@ -483,8 +483,8 @@ The console then reads:
 	inner first postlink
 	outer postlink
 
-So there are several things to note. The first is that even though the terminal was on the inner second directive, the template from the inner first directive did not compile. The second is that the function ordering takes precedence over the directive order. Specifically, 
-The compile functions run as a block before the rest of the functions, however the link and controller functions run in priority order. 
+So there are several things to note. The first is that even though the terminal was on the inner second directive, the template from the inner first directive did not compile. The second is that the function ordering takes precedence over the directive order. Specifically,
+The compile functions run as a block before the rest of the functions, however the link and controller functions run in priority order.
 
 Code: http://plnkr.co/edit/FgJM0SMraIP2dmorvHTx
 
@@ -509,7 +509,7 @@ is preferable.
 
 ####3.1.5.4 Linking
 There are two linking functions both of which have the signature
-    
+
     function(elem, attrs, scope, controller, transcludeFn)
 
 #####3.1.5.4.1 PreLink
@@ -519,12 +519,12 @@ This will run after the isolateScope binds but before any nested DOM is linked. 
 This is the workhorse and default function called by a directive. If no compile function is provided and only a `link` key is a given, it defaults to this. It will run after all nested directives have fully compiled and linked as well as any directives with a higher priority.
 
 ###3.1.6 Require
-The final key is `require`. Fundamentally what this allows you to do is to pull in one (or multiple) directive controllers to expose them as an API. 
+The final key is `require`. Fundamentally what this allows you to do is to pull in one (or multiple) directive controllers to expose them as an API.
 The controller name can be prefixed with `^` to indicate that the directive exposing the controller must be above the current element in the DOM, `?`, to indicate that the controller is optional, or `^?` to indicate it is up AND optional. Lack of a prefix indicates that the directive must be a sibling. For the latter reason (the possibility to use an API exposing directive as a sibling), it is best practice NOT to use Element level directives for this purpose.
 The controller (or array of controllers if multiple) is then passed into the linking functions as the fourth parameter. Recall:
-   
-    link: function (scope, elem, attrs, controller, transcludeFn)    
-    
+
+    link: function (scope, elem, attrs, controller, transcludeFn)
+
 This opens the field to multiple interesting strategies.
 
 The first approach is to use `controller` to bundle functionality into an API level directive. Commonly used tasks like sorting and filtering lend themselves well to this kind of implementation. For example lets say we want to build a directive that can sort an arbitrary collection.
@@ -549,7 +549,7 @@ And consume it like so using `require`:
 	  return {
 	    restrict: 'E',
 	    require: '^?sortable',
-	    template: '<div ng-repeat="item in list">{{item.name}}</div>',
+	    template: '<div ng-repeat="item in list">{{ item.name }}</div>',
 	    link: function (scope, attrs,elem, ctrl) {
 	      scope.list = [{name: 'John'}, {name: 'Alan'}, {name: 'Cindy'}, {name: 'Scarlett'}, {name: 'Aristotle'}, {name: 'Barack'}];
 	      scope.sort = function () {
@@ -587,14 +587,14 @@ For example:
 	    }
 	  }
 	});
-	
+
 	app.directive('demoList', function () {
 	  return {
 	    restrict: 'E',
-	    template: '<div ng-repeat="item in list">{{item.name}}</div>'
+	    template: '<div ng-repeat="item in list">{{ item.name }}</div>'
 	  }
 	});
-	
+
 	app.directive('demoIsolate', function () {
 	  return {
 	    restrict: 'E',
@@ -602,7 +602,7 @@ For example:
 	    scope: {}
 	  }
 	});
-	
+
 	app.directive('nestedIsolate', function () {
 	  return {
 	    restrict: 'E',
@@ -632,7 +632,7 @@ It is worth noting, that in this example the directives were not on the same ele
 #4 Other Strategies
 So what other composition strategies are there? We've talked about isolate scope as a tool for self sustainability and reuse, and we've talked about controllers and require as tools of composition.
 
-There are several patterns worth mentioning. 
+There are several patterns worth mentioning.
 
 ##4.1 Dynamic injection
 First and foremost, by injecting `$injector`, you can dynamically identify different services depending on the situation. This is a pattern that can be quite easily used with an `@` binding. All it requires is that the varying injectable services have a uniform API. This allows building flexible components that inject different type of things in different situations. This pattern is complimentary with everything discussed so far and can be used quite easily in conjunction with the controller/require pattern and isolate scopes. Think of controllers/require as exposing functionality, while `$injector` and services expose data.
@@ -647,20 +647,20 @@ For example, let us say we wish to have a widget which can display some arbitrar
           targetMethod: '@',
           displayProperty: '@'
         },
-        template: '<div>{{item[displayProperty]}}</div>',
+        template: '<div>{{ item[displayProperty] }}</div>',
         link: function (scope) {
           var service = $injector.get(scope.targetService);
           scope.item = service[scope.targetMethod]();
         }
       }
     });
-    
+
 We use the `$injector` to pull in a service, use isolate scope to name its methods and the displayproperty, and, voila, flexible data sources.
 
 Running sample: http://plnkr.co/edit/trTPqfoMOfsDXYSsiOCR
 
 ##4.2 Eventing
-Another common strategy for composition across directive scopes is to use Angulars eventing framework to communicate. There are three methods useful for this, and they are: 
+Another common strategy for composition across directive scopes is to use Angulars eventing framework to communicate. There are three methods useful for this, and they are:
 `scope.$emit`, which sends a message from your current scope upwards inclusive,
 `scope.$broadcast`, which sends a message from your current scope downwards inclusive,
 and `scope.$on`, which listens for a message in a particualr scope.
@@ -674,19 +674,19 @@ For example, lets say we have a list of clickable users, on one half our page, a
         $scope.$broadcast('demoEventRenamed', message);
       })
     });
-    
+
     app.directive('moreScope', function () {
       return {
         restrict: 'A',
         scope: {}
       }
     })
-    
-    
+
+
     app.directive('eventUp', function () {
       return {
         restrict: 'E',
-        template: '<div>This is the inner directive with the click: <div ng-repeat="item in list" ng-click="send(item)">{{item.name}}</div></div>',
+        template: '<div>This is the inner directive with the click: <div ng-repeat="item in list" ng-click="send(item)">{{ item.name }}</div></div>',
         link: function (scope) {
           scope.list = [{name: 'Harley'}, {name: 'Edward'}, {name: 'Selina'}, {name: 'Pamela'}];
           scope.send = function (item) {
@@ -695,12 +695,12 @@ For example, lets say we have a list of clickable users, on one half our page, a
         }
       }
     });
-    
+
     app.directive('eventCatch', function () {
       return {
         restrict: 'E',
         scope: {},
-        template: '<div> This is the inner directive with the listen: <div ng-repeat="item in list">{{item.name}}</div></div>',
+        template: '<div> This is the inner directive with the listen: <div ng-repeat="item in list">{{ item.name }}</div></div>',
         link: function (scope) {
           scope.list = [];
           scope.$on('demoEventRenamed', function (evt, message) {
@@ -718,7 +718,7 @@ Then wiring this with the following DOM:
       </div>
       <event-catch></event-catch>
     </div>
-    
+
 Note that the event gets renamed in the parent to avoid an infinite loop on rethrow. Also note that events permeate the boundaries of isolate scopes.
 
 A working demo is here: http://plnkr.co/edit/Thm8TTp1V2O3gx7X60cV
@@ -729,7 +729,7 @@ It is also an important observation that putting multiple directives on the same
 Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives (recall here, that a sibling directive is a directive on the same element as another directive). The important thing to remember here, is that because the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the `attrs` object tends to blow that out of the water. As such, this is not a practice I make much use of, especially given that everything it achieves can be similarly achieved through other means.
 
 #5 Conclusion/Summary
-Isolate Scopes are awesome. They are the secret sauce that lets your directives stand alone.  
-Transclusion lets you pull in custom widgets and have your DOM be flexible.    
-Directive Controller's are an excellent way to expose universal APIs.  
+Isolate Scopes are awesome. They are the secret sauce that lets your directives stand alone.
+Transclusion lets you pull in custom widgets and have your DOM be flexible.
+Directive Controller's are an excellent way to expose universal APIs.
 Use `$inject` to pull in flexible data sources.
