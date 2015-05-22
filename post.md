@@ -65,7 +65,7 @@ The first and simplest configuration parameter available on the returnable objec
       }
     }
     
-`restrict: 'E'` means that the directive will trigger in the following circumstance: `<demo-one/>`
+`restrict: 'E'` means that the directive will trigger in the following circumstance: `<demo-one/>`  
 `restrict: 'A'` means that the directive will trigger in the following circumstance: `<div demo-one/>`  
 `restrict: 'C'`  means the directive will trigger in the following circumstance:
 `<div class='demo-one'/>`  
@@ -75,7 +75,8 @@ The first and simplest configuration parameter available on the returnable objec
 These can also be combined.
 In general I dislike using class restricted directives as it needlessly couples functional directive information with css presentation logic, and makes the stylesheets significantly more brittle.
 I also similiarly dislike meta restricted directives as they pollute the codebase with needless comments.
-In general attribute level directives are more flexible then element level directives as they can be composed with ease simply by putting multiple directives on the same element.
+In general attribute level directives are more flexible then element level directives as they can be composed with ease simply by putting multiple directives on the same element.    
+A more general discussion of this will follow in sections 3.1.6 and 4
 
 ####3.1.2 Templating
 There are two keys that can be passed into a Directive Definition Object to indicate its HTML structure. The first is the `template` key which accepts an HTML string such as `<div> I am in your Directive Definition Object rendering your content</div>` directly. The second is a `templateUrl` key which accepts a path to an html file. By default these will override any DOM originally nested within the directive. So:
@@ -622,8 +623,11 @@ Note the nested isolate Scopes. Now given the following DOM:
 	   <demo-list list='list'></demo-list>
 	   <demo-isolate></demo-istolate>
 	</div>
+
 A click on the giant CLICK ME! will in fact add the new guy! Obviously this is a slightly fanciful example, but with a little bit of imagination the utility should become rather obvious as a replacement for deep passes of `&` isolate scope bindings.
 Working Example: http://plnkr.co/edit/xGozv2RHZz7CH0jFuyvA
+
+It is worth noting, that in this example the directives were not on the same element to showcase the configuration syntax of `^?`. However by dropping one (or both) the directive would only look for its controller among its sibling directives, directives that share the same element. It goes without saying this is only possible, if at least one is an attribute directive.
 
 #4 Other Strategies
 So what other composition strategies are there? We've talked about isolate scope as a tool for self sustainability and reuse, and we've talked about controllers and require as tools of composition.
@@ -719,8 +723,10 @@ Note that the event gets renamed in the parent to avoid an infinite loop on reth
 
 A working demo is here: http://plnkr.co/edit/Thm8TTp1V2O3gx7X60cV
 
+It is also an important observation that putting multiple directives on the same element and having one `$emit` and the other catch with `$on` is a powerful tool that can only work when at least one of them is an attribute level directive (recall section 3.1.1).
+
 ##4.3 Shared attributes
-Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives. The important thing to remember here, is that because the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the `attrs` object tends to blow that out of the water. As such, this is not a practice I make much use of, especially given that everything it achieves can be similarly achieved through other means.
+Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives (recall here, that a sibling directive is a directive on the same element as another directive). The important thing to remember here, is that because the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the `attrs` object tends to blow that out of the water. As such, this is not a practice I make much use of, especially given that everything it achieves can be similarly achieved through other means.
 
 #5 Conclusion/Summary
 Isolate Scopes are awesome. They are the secret sauce that lets your directives stand alone.  
