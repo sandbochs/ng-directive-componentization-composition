@@ -642,6 +642,6 @@ Another common strategy is to use the `attrs` parameter into the linking functio
 
 #5 Conclusion/Summary
 Isolate Scopes are awesome. They are the secret sauce that lets your directives stand alone.  
-Transclusion lets you pull in custom widgets and have your DOM be flexible.
+Transclusion lets you pull in custom widgets and have your DOM be flexible.    
 Directive Controller's are an excellent way to expose universal APIs.  
 Use `$inject` to pull in flexible data sources.
