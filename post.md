@@ -1,5 +1,5 @@
 #1. Introduction
-AngularJS, is currently one of the most widely used client side framework. It exposes large amounts of complex functionality, and lends itself very well to writing reusable, generic code.
+AngularJS, is currently one of the most widely used client side frameworks. It exposes large amounts of complex functionality, and lends itself very well to writing reusable, generic code.
 This article will attempt to be a detailed, and heavily opinionated look at what is Angular's Unit of reuse - directives, with an eye towards explaining their many frequently confusing features. 
 
 ##1.1 Requirements, Assumptions
