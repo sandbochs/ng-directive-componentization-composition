@@ -631,12 +631,34 @@ Note the nested isolate Scopes. Now given the following DOM:
 A click on the giant CLICK ME! will in fact add the new guy! Obviously this is a slightly fanciful example, but with a little bit of imagination the utility should become rather obvious as a replacement for deep passes of `&` isolate scope bindings.
 Working Example: http://plnkr.co/edit/xGozv2RHZz7CH0jFuyvA
 
-#4 Other Composition Strategies
+#4 Other Composition/Reuse Strategies
 So what other composition strategies are there? We've talked about isolate scope as a tool for self sustainability and reuse, and we've talked about controllers and require as tools of composition.
 
 There are several patterns worth mentioning. 
 
-First and foremost, by injecting `$inject`, you can dynamically identify different services depending on the situation. This is a pattern that can be quite easily used with an `@` binding. All it requires is that the varying injectable services have a uniform API. This allows building flexible components that inject different type of things in different situations. This pattern is complimentary with everything discussed so far and can be used quite easily in conjunction with the controller/require pattern and isolate scopes. Think of controllers/require as exposing functionality, while `$inject` and services expose data.
+First and foremost, by injecting `$injector`, you can dynamically identify different services depending on the situation. This is a pattern that can be quite easily used with an `@` binding. All it requires is that the varying injectable services have a uniform API. This allows building flexible components that inject different type of things in different situations. This pattern is complimentary with everything discussed so far and can be used quite easily in conjunction with the controller/require pattern and isolate scopes. Think of controllers/require as exposing functionality, while `$injector` and services expose data.
+
+For example, let us say we wish to have a widget which can display some arbitrary type of object in some way. This object could be fetched from different keys, its display property could vary, you get the picture? What would that code look like?
+
+    app.directive('flexibleWithInjection', function ($injector) {
+      return {
+        restrict: 'E',
+        scope: {
+          targetService: '@',
+          targetMethod: '@',
+          displayProperty: '@'
+        },
+        template: '<div>{{item[displayProperty]}}</div>',
+        link: function (scope) {
+          var service = $injector.get(scope.targetService);
+          scope.item = service[scope.targetMethod]();
+        }
+      }
+    });
+    
+We use the `$injector` to pull in a service, use isolate scope to name its methods and the displayproperty, and, voila, flexible data sources.
+
+Running sample: http://plnkr.co/edit/trTPqfoMOfsDXYSsiOCR?p=preview
 
 Another common strategy is to use the `attrs` parameter into the linking function, in conjunction with `attrs.$observe` to communicate among sibling directives. The important thing to remember here, is that the attrs object is shared between sibling directives by reference, changes in one place WILL propagate to all others. While this is a powerful tool, I find it does not play particularly nicely with isolate scopes. Since isolate scopes read off of the directive's attributes, relying on the attrs object tends to blow that out of the water. As such, this is not a practice I hold in particularly high regard, especially that everything it achieves can be similarly achieved through other means.
 
