@@ -631,7 +631,7 @@ Note the nested isolate Scopes. Now given the following DOM:
 A click on the giant CLICK ME! will in fact add the new guy! Obviously this is a slightly fanciful example, but with a little bit of imagination the utility should become rather obvious as a replacement for deep passes of `&` isolate scope bindings.
 Working Example: http://plnkr.co/edit/xGozv2RHZz7CH0jFuyvA
 
-#4 Other Composition/Reuse Strategies
+#4 Other Strategies
 So what other composition strategies are there? We've talked about isolate scope as a tool for self sustainability and reuse, and we've talked about controllers and require as tools of composition.
 
 There are several patterns worth mentioning. 
